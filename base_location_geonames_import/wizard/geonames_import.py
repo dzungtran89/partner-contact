@@ -163,6 +163,7 @@ class CityZipGeonamesImport(models.TransientModel):
         for i, row in enumerate(parsed_csv):
             if max_import and i == max_import:
                 break
+<<<<<<< HEAD
             state_id = state_dict[row[country.geonames_state_code_column or 4]]
             city_id, city_name = (
                 self.select_city(row, country, state_id)
@@ -171,6 +172,16 @@ class CityZipGeonamesImport(models.TransientModel):
             )
             if not city_id:
                 city_vals = self.prepare_city(row, country, state_id)
+=======
+            state_id = state_dict[row[self.code_row_index or 4]]
+            city_id, city_name = (
+                self.select_city(row, self.country_id, state_id)
+                if search_cities
+                else False
+            )
+            if not city_id:
+                city_vals = self.prepare_city(row, self.country_id, state_id)
+>>>>>>> [FIX+IMP] base_location: Re-import process
                 if city_vals not in city_vals_list:
                     city_vals_list.append(city_vals)
             else:
@@ -193,16 +204,32 @@ class CityZipGeonamesImport(models.TransientModel):
         zip_model = self.env["res.city.zip"]
         res_city_model = self.env["res.city"]
         # Store current record list
+<<<<<<< HEAD
         old_zips = set(zip_model.search([("city_id.country_id", "=", country.id)]).ids)
         search_zips = len(old_zips) > 0
         old_cities = set(res_city_model.search([("country_id", "=", country.id)]).ids)
         search_cities = len(old_cities) > 0
         current_states = state_model.search([("country_id", "=", country.id)])
+=======
+        old_zips = set(
+            zip_model.search([("city_id.country_id", "=", self.country_id.id)]).ids
+        )
+        search_zips = len(old_zips) > 0
+        old_cities = set(
+            res_city_model.search([("country_id", "=", self.country_id.id)]).ids
+        )
+        search_cities = len(old_cities) > 0
+        current_states = state_model.search([("country_id", "=", self.country_id.id)])
+>>>>>>> [FIX+IMP] base_location: Re-import process
         search_states = len(current_states) > 0
         max_import = self.env.context.get("max_import", 0)
         logger.info("Starting to create the cities and/or city zip entries")
         # Pre-create states and cities
+<<<<<<< HEAD
         state_dict = self._create_states(parsed_csv, search_states, max_import, country)
+=======
+        state_dict = self._create_states(parsed_csv, search_states, max_import)
+>>>>>>> [FIX+IMP] base_location: Re-import process
         city_dict = self._create_cities(
             parsed_csv, search_cities, max_import, state_dict, country
         )
@@ -213,9 +240,15 @@ class CityZipGeonamesImport(models.TransientModel):
                 break
             # Don't search if there aren't any records
             zip_code = False
+<<<<<<< HEAD
             state_id = state_dict[row[country.geonames_state_code_column or 4]]
             if search_zips:
                 zip_code = self.select_zip(row, country, state_id)
+=======
+            state_id = state_dict[row[self.code_row_index or 4]]
+            if search_zips:
+                zip_code = self.select_zip(row, self.country_id, state_id)
+>>>>>>> [FIX+IMP] base_location: Re-import process
             if not zip_code:
                 city_id = city_dict[
                     (self.transform_city_name(row[2], country), state_id)
@@ -224,7 +257,11 @@ class CityZipGeonamesImport(models.TransientModel):
                 if zip_vals not in zip_vals_list:
                     zip_vals_list.append(zip_vals)
             else:
+<<<<<<< HEAD
                 old_zips.discard(zip_code.id)
+=======
+                old_zips.remove(zip_code.id)
+>>>>>>> [FIX+IMP] base_location: Re-import process
         self.env["res.city.zip"].create(zip_vals_list)
         if not max_import:
             if old_zips:
@@ -232,7 +269,11 @@ class CityZipGeonamesImport(models.TransientModel):
                 self.env["res.city.zip"].browse(list(old_zips)).unlink()
                 logger.info(
                     "%d city zip entries deleted for country %s"
+<<<<<<< HEAD
                     % (len(old_zips), country.name)
+=======
+                    % (len(old_zips), self.country_id.name)
+>>>>>>> [FIX+IMP] base_location: Re-import process
                 )
             old_cities -= set(city_dict.values())
             if old_cities:
@@ -240,7 +281,11 @@ class CityZipGeonamesImport(models.TransientModel):
                 self.env["res.city"].browse(list(old_cities)).unlink()
                 logger.info(
                     "%d res.city entries deleted for country %s"
+<<<<<<< HEAD
                     % (len(old_cities), country.name)
+=======
+                    % (len(old_cities), self.country_id.name)
+>>>>>>> [FIX+IMP] base_location: Re-import process
                 )
         logger.info(
             "The wizard to create cities and/or city zip entries from "
